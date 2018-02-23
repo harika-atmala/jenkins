@@ -1,0 +1,39 @@
+{
+  "builders": [{
+    "type": "azure-arm",
+
+    "client_id" : "{enter your client ID}",
+    "client_secret"   : "{enter your client secret ID}",
+    "tenant_id"       : "{enter your tenant ID}",
+    "subscription_id" : "{enter your subscription ID}",
+
+    "managed_image_resource_group_name": "sb-rg",
+    "managed_image_name": "AzureJenkinsImage",
+
+    "os_type": "Linux",
+    "image_publisher": "Canonical",
+    "image_offer": "UbuntuServer",
+    "image_sku": "16.04-LTS",
+
+    "azure_tags": {
+        "dept": "Testing",
+        "task": "Jenkins Image Deployment"
+    },
+
+    "location": "west US",
+    "vm_size": "Standard_DS2_v2"
+  }],
+  "provisioners": [{
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+    "inline": [
+		"wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -",
+		"sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'",
+		"apt-get update",
+		"apt-get upgrade -y",
+		"apt-get install -y jenkins",
+      "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+    ],
+    "inline_shebang": "/bin/sh -x",
+    "type": "shell"
+  }]
+}
